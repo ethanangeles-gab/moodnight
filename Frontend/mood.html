@@ -14,11 +14,12 @@
         .mood-area { background-color: var(--mn-card-bg); padding: 30px; border-radius: 8px; }
         .form-control { background-color: var(--mn-input-bg); color: var(--mn-text-color); border: 1px solid var(--mn-input-border); }
         .btn-purple { background-color: var(--mn-accent-color); color: white; }
+        .form-range::-webkit-slider-thumb { background: var(--mn-accent-color); }
     </style>
 </head>
 <body>
     <script>
-        if (!localStorage.getItem('userToken')) { window.location.href = 'index.html'; }
+        if (!localStorage.getItem('moodnight_jwt')) { window.location.href = 'index.html'; }
     </script>
 
     <nav class="navbar navbar-expand-lg">
@@ -41,12 +42,17 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="mood-area">
-                    <h2 class="mb-4">Mood Tracker</h2>
+                    <h2 class="mb-4">How are you feeling? 🤔</h2>
                     <form id="moodLogForm">
-                        <label>How are you feeling?</label>
-                        <input type="range" class="form-range" min="1" max="10" id="moodRange">
-                        <textarea class="form-control mt-3" rows="3" placeholder="Why?"></textarea>
-                        <button class="btn btn-purple mt-3">Log Mood</button>
+                        <label class="form-label text-muted">Mood Scale (1-10)</label>
+                        <div class="d-flex justify-content-between text-muted small px-1">
+                            <span>Bad</span><span>Neutral</span><span>Amazing</span>
+                        </div>
+                        <input type="range" class="form-range" min="1" max="10" id="moodRange" value="5">
+                        
+                        <textarea id="moodNote" class="form-control mt-4" rows="3" placeholder="Why do you feel this way? (Optional)"></textarea>
+                        
+                        <button type="submit" class="btn btn-purple mt-3 w-100">Log Mood</button>
                     </form>
                 </div>
             </div>
@@ -61,6 +67,35 @@
                 e.preventDefault();
                 localStorage.clear();
                 window.location.href = 'index.html';
+            });
+
+            // Form Submit
+            const form = document.getElementById('moodLogForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const mood_value = document.getElementById('moodRange').value;
+                const mood_note = document.getElementById('moodNote').value;
+                const token = localStorage.getItem('moodnight_jwt');
+
+                try {
+                    const res = await fetch('http://localhost:3006/api/mood', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token
+                        },
+                        body: JSON.stringify({ mood_value, mood_note })
+                    });
+
+                    if (res.ok) {
+                        alert('Mood Logged!');
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        alert('Failed to log mood.');
+                    }
+                } catch (err) {
+                    console.error(err);
+                }
             });
         });
     </script>

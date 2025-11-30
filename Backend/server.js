@@ -8,6 +8,8 @@ const db = require('./db');
 
 // Import authentication routes (Week 1 requirement)
 const authRoutes = require('./routes/authRoutes');
+const journalRoutes = require('./routes/journalRoutes');
+const moodRoutes = require('./routes/moodRoutes');
 
 const app = express();
 // Changed default port to 3006 for consistency with previous frontend code
@@ -29,6 +31,8 @@ app.use(express.static(path.join(__dirname, '../Frontend')));
 
 // Authentication Routes (POST /api/auth/register, POST /api/auth/login)
 app.use('/api/auth', authRoutes);
+app.use('/api/journal', journalRoutes); // New Route
+app.use('/api/mood', moodRoutes);       // New Route
 
 // General health check route
 app.get('/api/health', (req, res) => {

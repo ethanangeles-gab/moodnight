@@ -18,6 +18,7 @@
 </head>
 <body>
     <script>
+        // FIX: Changed 'moodnight_jwt' to 'userToken' to match your login logic
         if (!localStorage.getItem('userToken')) { window.location.href = 'index.html'; }
     </script>
 
@@ -39,13 +40,19 @@
     
     <div class="container content-container">
         <div class="row">
-            <div class="col-lg-8">
-                <h2 class="mb-4">Journal</h2>
+            <div class="col-lg-8 mx-auto">
+                <h2 class="mb-4">Write a Journal Entry ✍️</h2>
                 <div class="journal-card">
                     <form id="journalEntryForm">
-                        <div class="mb-3"><label class="text-muted">Title</label><input type="text" class="form-control"></div>
-                        <div class="mb-3"><label class="text-muted">Entry</label><textarea class="form-control" rows="10"></textarea></div>
-                        <button type="submit" class="btn btn-purple">Save</button>
+                        <div class="mb-3">
+                            <label class="text-muted">Title</label>
+                            <input type="text" id="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="text-muted">Entry</label>
+                            <textarea id="content" class="form-control" rows="10" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-purple">Save Entry</button>
                     </form>
                 </div>
             </div>
@@ -56,14 +63,44 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Logout Logic
-            const logoutLink = document.getElementById('logoutLink');
-            if (logoutLink) {
-                logoutLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    localStorage.clear();
-                    window.location.href = 'index.html';
-                });
-            }
+            document.getElementById('logoutLink').addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.clear();
+                window.location.href = 'index.html';
+            });
+
+            // Form Submission
+            const form = document.getElementById('journalEntryForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('title').value;
+                const content = document.getElementById('content').value;
+                
+                // FIX: Changed 'moodnight_jwt' to 'userToken'
+                const token = localStorage.getItem('userToken');
+
+                try {
+                    const res = await fetch('http://localhost:3006/api/journal', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': token
+                        },
+                        body: JSON.stringify({ title, content })
+                    });
+
+                    if (res.ok) {
+                        alert('Journal Saved Successfully!');
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        const data = await res.json();
+                        alert('Error: ' + data.message);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('Failed to connect to server.');
+                }
+            });
         });
     </script>
 </body>
